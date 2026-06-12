@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#05080f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<title>STRATEGOS</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{
+  --bg:#05080f; --panel:#0b111e; --panel2:#091022;
+  --gold:#fbbf24; --gold-dim:rgba(251,191,36,.1);
+  --cyan:#38bdf8; --green:#34d399; --red:#f87171;
+  --ink:#d4dce8; --ink-dim:#52617a; --ink-faint:#2c3a52;
+  --border:rgba(56,189,248,.12); --border-gold:rgba(251,191,36,.4);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;height:100%;overflow:hidden}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:'SF Mono',ui-monospace,'JetBrains Mono',Menlo,Consolas,monospace;
+  display:flex;flex-direction:column;
+  padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom);
+}
+#app{display:flex;flex-direction:column;height:100%;overflow:hidden}
+
+/* HEADER */
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:10px 14px;border-bottom:1px solid var(--border);flex-shrink:0;background:rgba(5,8,15,.98)}
+.brand{display:flex;align-items:center;gap:8px}
+.logo{font-size:20px;color:var(--gold)}
+.title{font-size:13px;font-weight:800;letter-spacing:.13em;color:#f1f5f9}
+.title b{color:var(--gold);font-weight:800}
+.web-toggle{padding:5px 9px;font-size:9px;letter-spacing:.06em;background:transparent;
+  border:1px solid rgba(255,255,255,.1);color:var(--ink-dim);border-radius:5px;font-family:inherit}
+.web-toggle.on{background:rgba(52,211,153,.08);border-color:rgba(52,211,153,.35);color:var(--green)}
+
+/* TABS */
+nav{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;background:rgba(5,8,15,.95)}
+nav button{flex:1;padding:10px 4px;font-size:9.5px;letter-spacing:.08em;background:transparent;
+  border:none;border-bottom:2px solid transparent;color:var(--ink-dim);font-family:inherit;font-weight:600}
+nav button.active{color:var(--gold);border-bottom-color:var(--gold)}
+
+main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.view{display:none;flex-direction:column;min-height:100%}
+.view.active{display:flex}
+
+/* INTAKE */
+.intake{padding:16px 14px 90px}
+.intake-head h2{font-size:13px;font-weight:800;letter-spacing:.15em;margin:0 0 8px;color:#f1f5f9}
+.intake-head p{font-size:11px;color:var(--ink-dim);line-height:1.7;margin:0 0 14px}
+.progress{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.track{flex:1;height:4px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden}
+.fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--green));width:8%;transition:width .3s;border-radius:2px}
+.pct{font-size:9px;color:var(--ink-dim);letter-spacing:.06em;white-space:nowrap}
+.dim{background:var(--panel);border:1px solid var(--border);border-radius:9px;margin-bottom:7px;overflow:hidden;transition:border-color .2s}
+.dim.open{border-color:var(--border-gold)}
+.dim.filled{border-color:rgba(52,211,153,.3)}
+.dim-head{display:flex;align-items:center;gap:10px;width:100%;padding:13px 14px;background:transparent;border:none;font-family:inherit;text-align:left;color:inherit}
+.dim-icon{font-size:15px}
+.dim-label{flex:1;font-size:11.5px;font-weight:700;letter-spacing:.04em;color:#aebccf}
+.dim.filled .dim-label{color:var(--green)}
+.dim-label .req{color:var(--gold)}
+.dim-state{font-size:11px;color:var(--green)}
+.dim textarea{width:calc(100% - 28px);margin:0 14px 13px;padding:11px 12px;font-size:13px;
+  background:rgba(255,255,255,.035);border:1px solid rgba(56,189,248,.18);color:var(--ink);
+  border-radius:7px;resize:vertical;outline:none;font-family:inherit;line-height:1.6;min-height:70px}
+.launch-bar{position:fixed;left:0;right:0;bottom:0;padding:12px 14px calc(12px + env(safe-area-inset-bottom));
+  background:linear-gradient(180deg,transparent,var(--bg) 30%);pointer-events:none}
+.launch{width:100%;padding:15px;font-size:11px;font-weight:800;letter-spacing:.1em;
+  background:var(--gold-dim);border:1px solid var(--border-gold);color:var(--gold);
+  border-radius:10px;font-family:inherit;pointer-events:auto}
+.launch:disabled{opacity:.3}
+
+/* AGENT */
+.msgs{flex:1;padding:16px 14px;display:flex;flex-direction:column;gap:13px}
+.empty-agent{text-align:center;padding:50px 16px;margin:auto}
+.empty-agent .mark{font-size:36px;color:var(--gold)}
+.empty-agent h3{font-size:14px;letter-spacing:.18em;color:#f1f5f9;margin:10px 0}
+.empty-agent p{font-size:12px;color:var(--ink-dim);line-height:1.7;max-width:300px;margin:0 auto 18px}
+.empty-agent button{padding:12px 20px;font-size:11px;font-weight:700;letter-spacing:.08em;
+  background:var(--gold-dim);border:1px solid var(--border-gold);color:var(--gold);border-radius:9px;font-family:inherit}
+.u-bub{align-self:flex-end;max-width:82%;background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.2);
+  border-radius:12px 12px 3px 12px;padding:11px 14px;font-size:12px;line-height:1.6;white-space:pre-wrap;color:#e8edf4}
+.a-bub{align-self:flex-start;max-width:97%;background:var(--panel2);border:1px solid var(--border);
+  border-radius:3px 12px 12px 12px;padding:14px 16px}
+.a-tag{font-size:9px;color:var(--gold);letter-spacing:.15em;margin-bottom:10px;font-weight:700}
+.a-body{font-size:13px;line-height:1.72}
+.a-body .h2{font-size:11px;font-weight:800;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;
+  margin:18px 0 8px;border-bottom:1px solid rgba(251,191,36,.18);padding-bottom:5px}
+.a-body .h2:first-child{margin-top:0}
+.a-body .li{display:flex;gap:8px;margin:5px 0}
+.a-body .li .b{color:var(--cyan);font-size:9px;padding-top:5px;flex-shrink:0}
+.a-body .li .n{color:var(--gold);font-weight:700;font-size:11px;flex-shrink:0}
+.a-body strong{color:#f1f5f9}
+.loop{background:rgba(5,8,15,.85);border:1px solid var(--border);border-radius:9px;padding:13px 15px}
+.loop .lh{font-size:9px;letter-spacing:.14em;color:var(--cyan);opacity:.6;margin-bottom:9px}
+.loop .ok{font-size:11px;color:#1d3a2c;margin-bottom:4px}
+.loop .now{font-size:11px;color:var(--gold);display:flex;align-items:center;gap:8px}
+.loop .now .d{animation:blink 1s infinite;font-size:7px}
+
+.input-bar{display:flex;gap:9px;align-items:flex-end;padding:11px 14px calc(11px + env(safe-area-inset-bottom));
+  border-top:1px solid var(--border);flex-shrink:0;background:rgba(5,8,15,.98)}
+.input-bar textarea{flex:1;padding:11px 13px;font-size:14px;background:rgba(255,255,255,.035);
+  border:1px solid rgba(56,189,248,.2);color:var(--ink);border-radius:9px;resize:none;outline:none;
+  font-family:inherit;line-height:1.5;max-height:120px}
+.fire{width:46px;height:46px;font-size:18px;background:var(--gold-dim);border:1px solid var(--border-gold);
+  color:var(--gold);border-radius:9px;flex-shrink:0}
+.fire:disabled{opacity:.25}
+.spin{display:inline-block;animation:spin 1s linear infinite}
+
+/* VAULT */
+.vault{padding:0}
+.filters{padding:12px 14px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:5}
+.search{width:100%;padding:9px 12px;font-size:13px;background:rgba(255,255,255,.04);
+  border:1px solid rgba(56,189,248,.2);color:var(--ink);border-radius:7px;outline:none;font-family:inherit;margin-bottom:9px}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{padding:4px 10px;font-size:9px;letter-spacing:.05em;background:transparent;
+  border:1px solid rgba(255,255,255,.08);color:#475569;border-radius:4px;font-family:inherit}
+.chip.on{background:rgba(56,189,248,.1);border-color:rgba(56,189,248,.35);color:var(--cyan)}
+.chip.win{background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.35);color:var(--green)}
+.chip.fail{background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.35);color:var(--red)}
+.count{font-size:9px;color:var(--ink-faint);letter-spacing:.06em;margin-top:8px}
+.cards{padding:14px;display:flex;flex-direction:column;gap:9px}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:9px;padding:13px 14px}
+.card.open{border-color:var(--border-gold)}
+.card-top{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.badge{font-size:8px;font-weight:800;padding:2px 6px;border-radius:3px;letter-spacing:.1em}
+.badge.win{background:rgba(52,211,153,.12);color:var(--green);border:1px solid rgba(52,211,153,.25)}
+.badge.fail{background:rgba(248,113,113,.12);color:var(--red);border:1px solid rgba(248,113,113,.25)}
+.dom{font-size:9px;color:var(--cyan);letter-spacing:.05em}
+.era{font-size:9px;color:var(--ink-faint);margin-left:auto}
+.card h4{margin:0 0 3px;font-size:12px;font-weight:700;color:#e8edf4;line-height:1.4}
+.actor{font-size:10px;color:#475569}
+.pattern{margin-top:11px;background:rgba(251,191,36,.05);border:1px solid rgba(251,191,36,.13);
+  border-radius:6px;padding:10px 11px}
+.pattern .pl{font-size:8px;letter-spacing:.13em;color:var(--gold);margin-bottom:5px}
+.pattern .pt{font-size:11.5px;color:#fde68a;line-height:1.6}
+.weaponize{margin-top:9px;font-size:10px;padding:7px 13px;background:rgba(251,191,36,.08);
+  border:1px solid rgba(251,191,36,.28);color:var(--gold);border-radius:5px;font-family:inherit;letter-spacing:.06em}
+
+/* TOAST + MODAL */
+.toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:rgba(251,191,36,.16);
+  border:1px solid var(--border-gold);color:var(--gold);padding:9px 20px;border-radius:7px;font-size:11px;
+  letter-spacing:.06em;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}
+.setup{position:fixed;inset:0;background:rgba(5,8,15,.97);z-index:1000;display:flex;flex-direction:column;
+  padding:24px 20px calc(24px + env(safe-area-inset-bottom));overflow-y:auto}
+.setup h2{font-size:15px;letter-spacing:.12em;color:var(--gold);margin:0 0 14px}
+.setup p{font-size:12px;color:var(--ink-dim);line-height:1.7;margin:0 0 14px}
+.setup input{width:100%;padding:11px 13px;font-size:13px;background:rgba(255,255,255,.04);
+  border:1px solid rgba(56,189,248,.25);color:var(--ink);border-radius:8px;outline:none;font-family:inherit;margin-bottom:10px}
+.setup .row{display:flex;gap:10px;margin-top:8px}
+.setup button{flex:1;padding:12px;font-size:11px;font-weight:700;letter-spacing:.08em;border-radius:8px;font-family:inherit}
+.setup .save{background:var(--gold-dim);border:1px solid var(--border-gold);color:var(--gold)}
+.setup .skip{background:transparent;border:1px solid rgba(255,255,255,.12);color:var(--ink-dim)}
+.setup .note{font-size:10px;color:var(--ink-faint);line-height:1.6;margin-top:14px}
+.setup a{color:var(--cyan)}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+::-webkit-scrollbar{width:0;height:0}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="brand"><span class="logo">◈</span><span class="title">STRATEGOS <b>TOTAL</b></span></div>
+    <button class="web-toggle on" id="webToggle">🌐 LIVE</button>
+  </header>
+  <nav>
+    <button data-view="intake" class="active">🧩 INTAKE</button>
+    <button data-view="agent">◈ AGENT</button>
+    <button data-view="vault">🗄 VAULT</button>
+  </nav>
+  <main>
+    <section class="view active" id="view-intake">
+      <div class="intake">
+        <div class="intake-head">
+          <h2>SITUATION INTAKE MATRIX</h2>
+          <p>Every dimension you fill multiplies precision. The engine cross-references intersections — a legal window × an election cycle × a cultural moment is where the best moves hide. Only Core is required.</p>
+          <div class="progress"><div class="track"><div class="fill" id="fill"></div></div><span class="pct" id="pct">1/12 armed</span></div>
+        </div>
+        <div id="dimList"></div>
+      </div>
+      <div class="launch-bar"><button class="launch" id="launchBtn" disabled>◈ LAUNCH FULL-SPECTRUM ANALYSIS</button></div>
+    </section>
+
+    <section class="view" id="view-agent">
+      <div class="msgs" id="msgs">
+        <div class="empty-agent" id="emptyAgent">
+          <div class="mark">◈</div><h3>NO BRIEF LOADED</h3>
+          <p>Arm the Intake Matrix first. Each dimension gives the engine another axis to find leverage on.</p>
+          <button id="toIntake">→ Open Intake Matrix</button>
+        </div>
+      </div>
+      <div class="input-bar" id="agentInput" style="display:none">
+        <textarea id="followUp" placeholder="Drill deeper — challenge a move, add intel, ask the next layer..." rows="1"></textarea>
+        <button class="fire" id="followBtn">◈</button>
+      </div>
+    </section>
+
+    <section class="view" id="view-vault">
+      <div class="filters">
+        <input class="search" id="search" placeholder="Search patterns, actors, eras...">
+        <div class="chips" id="domChips"></div>
+        <div class="chips" id="outChips" style="margin-top:6px"></div>
+        <div class="count" id="vaultCount"></div>
+      </div>
+      <div class="cards" id="cards"></div>
+    </section>
+  </main>
+</div>
+<div class="toast" id="toast"></div>
+
+<div class="setup" id="setup" style="display:none">
+  <h2>◈ ACTIVATE STRATEGOS</h2>
+  <p>To run live analysis, paste your Anthropic API key. It's stored only on this device and never leaves it except to call the API directly.</p>
+  <input id="keyInput" type="password" placeholder="sk-ant-..." autocomplete="off">
+  <div class="row">
+    <button class="skip" id="skipKey">Browse offline</button>
+    <button class="save" id="saveKey">Activate</button>
+  </div>
+  <p class="note">Get a key at <a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com</a>. Without a key you can still browse the full vault — only live analysis needs it. To swap keys later, tap the ◈ logo.</p>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

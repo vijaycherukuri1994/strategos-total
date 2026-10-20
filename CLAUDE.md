@@ -12,3 +12,7 @@ The `impeccable` skill is installed at `.claude/skills/impeccable/`. Invoke it (
 If `PRODUCT.md` does not exist yet, run `/impeccable init` first.
 
 Skip the skill only for non-UI work (e.g. `strategos agent.py` logic, `strategos-vault.md` content, service-worker caching).
+
+## Skills catalog (Supabase)
+
+Installed skills are tracked in the Supabase project "Skills for claude" (project ref `aaozdqdqrbcaqfkdbwqb`), table `public.skills` (columns: `name`, `folder`, `description`, `version`, `source_repo`, `source_path`, `installed_in`, `tags`). Whenever you install, update or remove a skill in any repo, update its row there via the Supabase MCP tools. RLS is on with no public policies, so the table is not readable with the anon key.
